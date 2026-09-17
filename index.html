@@ -797,8 +797,10 @@ const COLOR_COMBO_RESTRICT = {
   '6': {'ホワイト':['ホワイト'],'ブラウン':['ホワイト','ナチュラル','ダークブラウン'],'プラチナステン':['ホワイト','ナチュラル','ダークブラウン','グレイジュ'],'ブラック':['ホワイト','ブラック','グレイジュ']}
 };
 const MAX_PHOTOS=2;
+// 調査日の初期値は端末のローカル日付を使う（toISOString はUTCのため日本時間の朝9時前に前日になる）
+const todayLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const blankWindow = () => ({placeId:'',existingId:'',fitId:'',around:'修復不必要',sillRise:'',mitsuke:'',floor:'',roomType:'',roomDetail:'',placeMemo:'',w:[null,null,null],h:[null,null,null],seriesId:'',newWindowId:'',hand:'',glassId:'',glassColor:'',glassPattern:'',outerColor:'',innerColor:'',edgeId:'',screen:'no',mool:'なし',upper:'未確認',memo:'',photos:[]});
-let state = {current:0,site:{projectName:'',surveyDate:new Date().toISOString().slice(0,10),building:'木造（3階以下）'},windows:[blankWindow()]};
+let state = {current:0,site:{projectName:'',surveyDate:todayLocal(),building:'木造（3階以下）'},windows:[blankWindow()]};
 let bulkSelected = new Set();
 let saveErrorShown=false;
 let currentRecordId=null,madoremoBackup=null;
@@ -1243,7 +1245,7 @@ const App = {
   loadSaved(){
     madoremoBackup?.openManager();
   },
-  clearAll(){if(confirm('新しい現場を作成しますか？\n現在編集中の内容は消去されます。保存ボタンで確定した現場は「一覧」から戻せます。')){bulkSelected.clear();currentRecordId=null;state={current:0,site:{projectName:'',surveyDate:new Date().toISOString().slice(0,10),building:'木造（3階以下）'},windows:[blankWindow()]};localStorage.setItem(STORE,JSON.stringify(state));this.render();const details=document.getElementById('siteInfoDetails');if(details)details.open=true;const ind=document.getElementById('save-ind');if(ind)ind.textContent='新規現場';}},
+  clearAll(){if(confirm('新しい現場を作成しますか？\n現在編集中の内容は消去されます。保存ボタンで確定した現場は「一覧」から戻せます。')){bulkSelected.clear();currentRecordId=null;state={current:0,site:{projectName:'',surveyDate:todayLocal(),building:'木造（3階以下）'},windows:[blankWindow()]};localStorage.setItem(STORE,JSON.stringify(state));this.render();const details=document.getElementById('siteInfoDetails');if(details)details.open=true;const ind=document.getElementById('save-ind');if(ind)ind.textContent='新規現場';}},
   preparePrint(){this.capture(); printArea.innerHTML=summary.innerHTML;}
 };
 function forceReload(){
