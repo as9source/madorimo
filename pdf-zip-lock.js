@@ -209,6 +209,8 @@
     opts = opts || {};
     var getPdf = opts.getPdf;
     var shareTitle = opts.shareTitle || 'PDF';
+    var onDone = typeof opts.onDone === 'function' ? opts.onDone : null;
+    function notifyDone(method){ if (!onDone) return; try { onDone(method); } catch (_) {} }
 
     return new Promise(function(resolve){
       injectStyles();
@@ -426,6 +428,7 @@
           try {
             await navigator.share({ files: [zipFile], title: shareTitle, text: zipName });
             showDoneState(password, '✅ 送信しました');
+            notifyDone('share');
           } catch (e) {
             if (e && e.name === 'AbortError') { close(); return; }
             console.error(e);
@@ -438,6 +441,7 @@
             a.href = url; a.download = zipName; a.click();
             setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
             showDoneState(password, '💾 ZIPをダウンロードしました。メールに添付して送信してください。');
+            notifyDone('download');
           } catch (e) {
             console.error(e);
             showErrorState('ダウンロードに失敗しました。');
