@@ -15,7 +15,7 @@
 
   // ▼ マドリモ専用 GA4 プロパティの測定ID（G-XXXXXXXXXX）。空のままなら計測しない。
   //   他アプリ用の測定IDを流用しないこと。
-  var MEASUREMENT_ID = '';
+  var MEASUREMENT_ID = 'G-GC5QG4X5YD';
 
   // 計測を有効にする公開ホスト
   var ALLOWED_HOSTS = ['madorimo.ktm-work.com'];
