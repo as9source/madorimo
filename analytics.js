@@ -6,7 +6,7 @@
  *  - 送るのは「イベント名」と、下の EVENTS に定義した集計用の値だけ。
  *    現場名・住所・調査日・部屋名・寸法・仕様・メモ・写真・保存データ・バックアップ内容は送らない。
  *    EVENTS にない項目や、許可していない値は送信前に捨てる。
- *  - ページURLはクエリ・ハッシュを除いたもの、ページタイトルは固定文字列で送る。
+ *  - ページURLはクエリ・ハッシュを除いたもの（アドレスバーからも消す）、ページタイトルは固定文字列で送る。
  *  - Google シグナル・広告のパーソナライズは無効。
  *  - 利用者は「使い方」画面からいつでも計測を止められる（端末ごとに記録）。
  */
@@ -96,30 +96,41 @@
     try { return document.referrer ? new URL(document.referrer).origin + '/' : ''; } catch (_) { return ''; }
   }
 
+  // アドレスバーの ? と # 以降を消す（gtag が自動で送るページURLに入力値や付加情報を含めないため）。
+  // マドリモは ? を再読み込み時のキャッシュ回避（?v=）にしか使っておらず、読み込み後に消しても動作は変わらない。
+  function cleanAddressBar(){
+    try {
+      if ((location.search || location.hash) && history.replaceState) {
+        history.replaceState(history.state, '', location.pathname);
+      }
+    } catch (_) {}
+  }
+
   function start(){
     if (!configured || optedOut || active) return;
     active = true;
+    cleanAddressBar();
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
-    var common = {
+    // 広告用の記録・シグナルは使わない（分析のみ）
+    window.gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
+    window.gtag('js', new Date());
+    var cfg = {
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
       page_location: cleanLocation(),
       page_referrer: cleanReferrer(),
       page_title: PAGE_TITLE
     };
-    window.gtag('js', new Date());
-    window.gtag('set', common);
-    window.gtag('set', {allow_google_signals: false, allow_ad_personalization_signals: false});
-    var cfg = {
-      send_page_view: false,
-      allow_google_signals: false,
-      allow_ad_personalization_signals: false,
-      page_location: common.page_location,
-      page_referrer: common.page_referrer,
-      page_title: PAGE_TITLE
-    };
+    window.gtag('set', {page_location: cfg.page_location, page_referrer: cfg.page_referrer, page_title: PAGE_TITLE});
     if (debug) cfg.debug_mode = true;
+    // ページビューは config で1回だけ自動送信される
     window.gtag('config', id, cfg);
-    window.gtag('event', 'page_view', common);
     if (!loaded) {
       loaded = true;
       var s = document.createElement('script');
